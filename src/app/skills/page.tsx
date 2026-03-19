@@ -5,7 +5,7 @@ import { Shell } from '@/components/layout/shell'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Loader2, Plus, Save, Trash2, X } from 'lucide-react'
+import { Loader2, Plus, Save, Trash2, X, Zap } from 'lucide-react'
 import type { Skill } from '@/lib/types'
 
 export default function SkillsPage() {
@@ -66,6 +66,13 @@ export default function SkillsPage() {
   const handleDelete = async (id: string) => {
     await fetch(`/api/skills/${id}`, { method: 'DELETE' })
     fetchSkills()
+  }
+
+  const handleSeedSkills = async () => {
+    setSaving(true)
+    await fetch('/api/seed', { method: 'POST' })
+    fetchSkills()
+    setSaving(false)
   }
 
   const handleEdit = (skill: Skill) => {
@@ -194,9 +201,13 @@ export default function SkillsPage() {
             </Card>
           ))}
           {skills.length === 0 && (
-            <p className="col-span-full text-sm text-muted-foreground text-center py-8">
-              ยังไม่มีทักษะ — กดปุ่ม &quot;เพิ่มทักษะ&quot; เพื่อสร้าง
-            </p>
+            <div className="col-span-full flex flex-col items-center gap-4 py-8">
+              <p className="text-sm text-muted-foreground">ยังไม่มีทักษะ</p>
+              <Button onClick={handleSeedSkills} disabled={saving}>
+                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Zap className="h-4 w-4 mr-2" />}
+                โหลดทักษะ KikiTrades (7 ทักษะ)
+              </Button>
+            </div>
           )}
         </div>
       </div>
