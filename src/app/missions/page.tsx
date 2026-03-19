@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Loader2, Plus, Send } from 'lucide-react'
 import Link from 'next/link'
+import { AgentAvatar } from '@/components/ui/agent-avatar'
 import type { Agent, Mission } from '@/lib/types'
 import { TEAM_COLORS } from '@/lib/types'
 
@@ -196,12 +197,7 @@ export default function MissionsPage() {
                     >
                       <div className="flex items-center gap-3">
                         {agent && (
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                            style={{ backgroundColor: TEAM_COLORS[agent.team] + '80' }}
-                          >
-                            {agent.name_th.charAt(0)}
-                          </div>
+                          <AgentAvatar agentId={agent.id} team={agent.team} size="sm" />
                         )}
                         <div>
                           <p className="text-sm font-medium">{mission.title}</p>

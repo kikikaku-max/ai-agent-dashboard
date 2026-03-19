@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Loader2, ArrowLeft, Brain, Target, Settings } from 'lucide-react'
+import { AgentAvatar } from '@/components/ui/agent-avatar'
 import type { Agent, Mission, Memory } from '@/lib/types'
 import { TEAM_COLORS, TEAM_LABELS } from '@/lib/types'
 
@@ -52,12 +53,7 @@ export default function AgentDetailPage() {
             </Button>
           </Link>
           <div className="flex items-center gap-4">
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-white"
-              style={{ backgroundColor: TEAM_COLORS[agent.team] + '80' }}
-            >
-              {agent.name_th.charAt(0)}
-            </div>
+            <AgentAvatar agentId={agent.id} team={agent.team} size="xl" />
             <div>
               <h2 className="text-2xl font-bold">{agent.name_th}</h2>
               <p className="text-muted-foreground">{agent.name_en} · {agent.role}</p>

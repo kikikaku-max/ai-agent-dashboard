@@ -5,6 +5,7 @@ import { Shell } from '@/components/layout/shell'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { AgentAvatar } from '@/components/ui/agent-avatar'
 import {
   Users,
   Target,
@@ -171,9 +172,7 @@ export default function CommandCenterPage() {
                         className="flex items-center justify-between p-2 rounded-lg hover:bg-accent transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold">
-                            {agent.name_th.charAt(0)}
-                          </div>
+                          <AgentAvatar agentId={agent.id} team={agent.team} size="sm" />
                           <div>
                             <p className="text-sm font-medium">{agent.name_th}</p>
                             <p className="text-xs text-muted-foreground">{agent.name_en}</p>

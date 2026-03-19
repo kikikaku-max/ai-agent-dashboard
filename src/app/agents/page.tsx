@@ -6,6 +6,7 @@ import { Shell } from '@/components/layout/shell'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Loader2 } from 'lucide-react'
+import { AgentAvatar } from '@/components/ui/agent-avatar'
 import type { Agent } from '@/lib/types'
 import { TEAM_COLORS, TEAM_LABELS } from '@/lib/types'
 
@@ -38,12 +39,7 @@ export default function AgentsPage() {
             <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shrink-0"
-                    style={{ backgroundColor: TEAM_COLORS[agent.team] + '80' }}
-                  >
-                    {agent.name_th.charAt(0)}
-                  </div>
+                  <AgentAvatar agentId={agent.id} team={agent.team} size="lg" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-sm truncate">{agent.name_th}</h3>
