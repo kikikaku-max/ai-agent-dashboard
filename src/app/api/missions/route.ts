@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuid } from 'uuid'
-import { listMissions, createMission } from '@/lib/db'
+import { listMissions, createMission, getChildMissions } from '@/lib/db'
 import { executeMission } from '@/lib/mission-runner'
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const agentId = searchParams.get('agent_id') || undefined
+    const parentId = searchParams.get('parent_id')
     const limit = parseInt(searchParams.get('limit') || '50')
+
+    if (parentId) {
+      const missions = await getChildMissions(parentId)
+      return NextResponse.json({ missions })
+    }
+
     const missions = await listMissions(limit, agentId)
     return NextResponse.json({ missions })
   } catch (error) {

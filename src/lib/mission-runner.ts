@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid'
 import { getDb, initDb, updateAgent, updateMission, insertChunk, getSkill } from './db'
 import { buildSystemPrompt, getAgentWithContext } from './agent-manager'
 import { streamCompletion } from './ai-engine'
+import { parseSubtasks, executeChain } from './chain-runner'
 import type { Skill } from './types'
 
 export const missionEvents = new EventEmitter()
@@ -89,6 +90,7 @@ export async function executeMission(missionId: string) {
       duration_ms: durationMs,
     })
 
+    // Save memory
     try {
       const memId = uuid()
       const memContent = `งาน: ${String(mission.input).slice(0, 100)}... → ผลลัพธ์สำเร็จ (${fullOutput.length} ตัวอักษร)`
@@ -97,6 +99,14 @@ export async function executeMission(missionId: string) {
         args: [memId, String(agent.id), memContent, missionId],
       })
     } catch { /* non-critical */ }
+
+    // If secretary produced subtasks, execute chain
+    if (String(agent.id) === 'secretary') {
+      const plan = parseSubtasks(fullOutput)
+      if (plan) {
+        executeChain(missionId).catch(console.error)
+      }
+    }
   } catch (error) {
     const durationMs = Date.now() - startTime
     const errorMsg = error instanceof Error ? error.message : 'Unknown error'

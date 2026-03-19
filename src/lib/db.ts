@@ -155,6 +155,14 @@ export async function listMessages(agentId?: string, limit = 50) {
   return result.rows
 }
 
+export async function getChildMissions(parentId: string) {
+  const result = await query(
+    'SELECT * FROM missions WHERE parent_id = ? ORDER BY created_at ASC',
+    [parentId]
+  )
+  return result.rows
+}
+
 export async function getStats() {
   const [totalAgents, busyAgents, totalMissions, runningMissions, completedMissions, failedMissions] = await Promise.all([
     query('SELECT COUNT(*) as count FROM agents'),

@@ -6,7 +6,7 @@ import { Shell } from '@/components/layout/shell'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Loader2, Plus, Send } from 'lucide-react'
+import { Loader2, Plus, Send, Link2 } from 'lucide-react'
 import Link from 'next/link'
 import { AgentAvatar } from '@/components/ui/agent-avatar'
 import type { Agent, Mission } from '@/lib/types'
@@ -18,6 +18,7 @@ export default function MissionsPage() {
   const [missions, setMissions] = useState<Mission[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreator, setShowCreator] = useState(false)
+  const [showChainCreator, setShowChainCreator] = useState(false)
   const [creating, setCreating] = useState(false)
 
   // Form state
@@ -38,6 +39,30 @@ export default function MissionsPage() {
       }
     }).finally(() => setLoading(false))
   }, [])
+
+  // Chain form state
+  const [chainTitle, setChainTitle] = useState('')
+  const [chainInput, setChainInput] = useState('')
+
+  const handleCreateChain = async () => {
+    if (!chainTitle || !chainInput) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/missions/chain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: chainTitle, input: chainInput }),
+      })
+      const data = await res.json()
+      if (data.mission_id) {
+        router.push(`/missions/${data.mission_id}`)
+      }
+    } catch (err) {
+      console.error('Failed to create chain:', err)
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const handleCreate = async () => {
     if (!selectedAgent || !title || !input) return
@@ -80,13 +105,70 @@ export default function MissionsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground text-sm">สร้างภารกิจให้ AI agents ทำงาน</p>
-          <Button onClick={() => setShowCreator(!showCreator)}>
-            <Plus className="h-4 w-4 mr-1" />
-            สร้างภารกิจใหม่
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => { setShowChainCreator(!showChainCreator); setShowCreator(false) }}>
+              <Link2 className="h-4 w-4 mr-1" />
+              สั่งงานทีม
+            </Button>
+            <Button onClick={() => { setShowCreator(!showCreator); setShowChainCreator(false) }}>
+              <Plus className="h-4 w-4 mr-1" />
+              สร้างภารกิจใหม่
+            </Button>
+          </div>
         </div>
 
         {/* Mission Creator */}
+        {/* Chain Mission Creator */}
+        {showChainCreator && (
+          <Card className="border-primary/30">
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Link2 className="h-4 w-4" />
+                สั่งงานทีม — เลขาจะวิเคราะห์และแบ่งงานให้ agents อัตโนมัติ
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">ชื่องาน</label>
+                  <input
+                    type="text"
+                    value={chainTitle}
+                    onChange={(e) => setChainTitle(e.target.value)}
+                    placeholder="เช่น: สร้าง content เรื่องทองคำวันนี้"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">อธิบายงานที่ต้องการ</label>
+                  <textarea
+                    value={chainInput}
+                    onChange={(e) => setChainInput(e.target.value)}
+                    placeholder="บอกรายละเอียดงาน — เลขาจะวิเคราะห์แล้วส่งต่อให้คนที่เหมาะสม..."
+                    rows={4}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+                  />
+                </div>
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-sm text-muted-foreground">
+                  🔗 เลขาจะวิเคราะห์งาน → แบ่ง sub-tasks → ส่งให้ agent ที่เหมาะสม → แต่ละตัวทำงานต่อกัน
+                </div>
+                <Button
+                  onClick={handleCreateChain}
+                  disabled={creating || !chainTitle || !chainInput}
+                  className="w-full"
+                >
+                  {creating ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> กำลังส่งงาน...</>
+                  ) : (
+                    <><Link2 className="h-4 w-4 mr-2" /> สั่งงานทีม</>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Single Mission Creator */}
         {showCreator && (
           <Card>
             <CardHeader>

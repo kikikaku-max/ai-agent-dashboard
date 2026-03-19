@@ -7,14 +7,17 @@ import { Shell } from '@/components/layout/shell'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Loader2, ArrowLeft, Clock, Cpu, FileText } from 'lucide-react'
+import { Loader2, ArrowLeft, Clock, Cpu, FileText, Link2 } from 'lucide-react'
+import { AgentAvatar } from '@/components/ui/agent-avatar'
 import { useSSE } from '@/hooks/use-sse'
-import type { Mission } from '@/lib/types'
+import type { Mission, Agent } from '@/lib/types'
 
 export default function MissionDetailPage() {
   const params = useParams()
   const missionId = params.missionId as string
   const [mission, setMission] = useState<Mission | null>(null)
+  const [subMissions, setSubMissions] = useState<Mission[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
 
   const shouldStream = mission?.status === 'running' || mission?.status === 'pending'
@@ -28,9 +31,17 @@ export default function MissionDetailPage() {
       .then(data => {
         if (data.mission) setMission(data.mission)
       })
+    // Fetch sub-missions
+    fetch(`/api/missions?parent_id=${missionId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.missions) setSubMissions(data.missions)
+      })
+      .catch(() => {})
   }
 
   useEffect(() => {
+    fetch('/api/agents').then(r => r.json()).then(d => setAgents(d.agents || []))
     refreshMission()
     setLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -172,6 +183,58 @@ export default function MissionDetailPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Sub-missions (Chain) */}
+        {subMissions.length > 0 && (
+          <Card className="border-primary/30">
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Link2 className="h-4 w-4 text-primary" />
+                Sub-missions ({subMissions.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {subMissions.map((sub, i) => {
+                  const agent = agents.find(a => a.id === sub.agent_id)
+                  return (
+                    <Link
+                      key={sub.id}
+                      href={`/missions/${sub.id}`}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                    >
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary text-xs font-bold">
+                        {i + 1}
+                      </div>
+                      {agent && (
+                        <AgentAvatar agentId={agent.id} team={agent.team} size="sm" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{sub.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {agent?.name_th || sub.agent_id}
+                          {sub.duration_ms > 0 && ` · ${(sub.duration_ms / 1000).toFixed(1)}s`}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          sub.status === 'completed' ? 'default' :
+                          sub.status === 'running' ? 'secondary' :
+                          sub.status === 'failed' ? 'destructive' : 'outline'
+                        }
+                      >
+                        {sub.status === 'completed' ? 'สำเร็จ' :
+                         sub.status === 'running' ? 'กำลังทำ' :
+                         sub.status === 'failed' ? 'ล้มเหลว' :
+                         sub.status === 'pending' ? 'รอ' : sub.status}
+                      </Badge>
+                    </Link>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </Shell>
   )
